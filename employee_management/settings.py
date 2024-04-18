@@ -67,6 +67,8 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'yogeshgoswami0306@gmail.com'
 EMAIL_HOST_PASSWORD = 'rerrvgnxwnditqoj'
+DEFAULT_FROM_EMAIL = 'celery <yogeshgoswami0306@gmail.com>'
+
 
 TEMPLATES = [
     {

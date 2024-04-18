@@ -654,8 +654,21 @@ class EmployeeLeaveViewSet(ModelViewSet):
         # Send email to admin
         if response.status_code == 201:  # Only send email if the ticket was successfully created
             ticket_data = response.data
+            leaveuser = request.user
+            emp = EmployeeLeave.objects.filter(employee=leaveuser).last()
+
+            start = emp.start_date
+            end = emp.end_date
+
+            date1 = datetime.strptime(str(start), "%Y-%m-%d")
+            date2 = datetime.strptime(str(end), "%Y-%m-%d")
+
+            difference = date2 - date1
+            diff = int(difference.days) + 1
+            if emp.leave_days == "Half":
+                diff = 0.5
             subject = 'New leave'
-            message = f'A new Leave has been submitted.\n\nname: foram'
+            message = f'A new Leave has been submitted.\n\n Employee name: {leaveuser.emp_name}\n\nLeave Date: {start} to {end}\n\nNo of Days: {diff}\n\nLeave Type: {emp.leave_type}\n\nLeave Day: {emp.leave_days}\n\nHalf: {emp.leave_half}\n\nReason: {emp.leave_reason}'
             from_email = 'yogeshgoswami0306@gmail.com'  # Sender's email address
             recipient_list = ['yogesh.pranshtech@gmail.com']  # Admin's email address
 

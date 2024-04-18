@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function () {
             start_date: document.getElementById("start_date").value,
             end_date: adjustStartDateForHalfDay(),
             leave_days: getSelectedLeaveDays(), // Call function to get selected leave days
-            leave_half: document.getElementById("leave_half").value,
+            leave_half: getSelectedLeaveHalf(),
             leave_reason: document.getElementById("leave_reason").value
         };
 
@@ -731,6 +731,16 @@ document.addEventListener("DOMContentLoaded", function () {
      function getSelectedLeaveDays() {
 
         const leaveDayRadios = document.getElementsByName('leave_duration');
+        for (const radio of leaveDayRadios) {
+            if (radio.checked) {
+                return radio.value;
+            }
+        }
+        return null; // Return null if no radio button is checked
+    }
+     function getSelectedLeaveHalf() {
+
+        const leaveDayRadios = document.getElementsByName('half_day_option');
         for (const radio of leaveDayRadios) {
             if (radio.checked) {
                 return radio.value;

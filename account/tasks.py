@@ -8,7 +8,7 @@ from account import models
 @shared_task
 def send_email_before_end_date():
     one_week_from_now = timezone.now() + timedelta(days=7)
-    employees_to_notify = models.EmpContract.objects.filter(end_date__lte=one_week_from_now)
+    employees_to_notify = models.Employee.objects.filter(emp_leaving_date__lte=one_week_from_now)
 
     # print("################################")
     for employee in employees_to_notify:
