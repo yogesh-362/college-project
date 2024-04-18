@@ -1,0 +1,910 @@
+{% extends 'account/base.html' %}
+{% block main-content %}
+
+
+{% load static %}
+
+
+<h1 class="main_heading">Employee Task list</h1>
+<div class="post" id="kt_post">
+        <div class="container-xxl">
+<!--            <div class="row  mb-2 ml-1">-->
+<!--                <h3 class="page-title d-flex align-items-center flex-wrap me-20 mb-300 mb-lg-0" style="font-size:22px;">Employee Task list</h3>-->
+<!--            </div>-->
+            <div class="card box_header_main">
+                <div class="card-header border-1 pt-6">
+                    <div class="employeeLeave bg-light box_header_main box_header_maintesk">
+                    <div class="box_header_task">
+                        <div>
+<label for="priority_search" class="visually-hidden">Select a Priority:</label>
+                        <select id="priority_search" >
+                            <option value="">All</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                </div>
+                <div>
+                    <button  class="button_mian" type="submit" >Search</button>
+                </div>
+                    </div>
+                <form action="http://127.0.0.1:8000/employeetask/"
+                          class="d-flex align-items-center employeeLeave">
+
+                        <div class="label-container ml-1">
+                            <label for="month" class="visually-hidden">Search Assign date</label>
+                            <!--                <input type="month" name="month" id="month" class="form-control form-control-solid me-2"-->
+                            <!--                       placeholder="Search Employee date">-->
+                            <input type="month" name="month" id="month" class="form-control form-control-solid me-2"
+                                   placeholder="Search Employee date" style="margin-right:120px ; margin-left:1px">
+                        </div>
+                        <button class="button_mian" type="button" name="submit" id="searchButton1"
+                                style="margin-left:2px;">Search
+                        </button>
+
+                </form>
+
+                {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+                <form class="search-form d-flex align-items-center employeeLeave"
+                              onsubmit="searchEmployeeTasks(); return false;">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" value="" name="searchInput"
+                                       class="form-control form-control-solid search-input"
+                                       placeholder="Search Employee">
+                            </div>
+                            <div>
+                                <button class="button_mian" type="submit" name="searchButton" id="searchButton">Search
+                                </button>
+                            </div>
+                </form>
+                {% endif %}
+
+                    <div class="card-toolbar ml-auto">
+                        <div class="d-flex justify-content-end" data-kt-customer-table-toolbar="base">
+                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true"
+                                 id="kt-toolbar-filter"></div>
+                            <button type="button"  class="button_mian"  data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_add_customer" fdprocessedid="e02ael" id="addTaskButton">Add Task Details
+                            </button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="new" id="leavesearch">
+                    <div class="card-body pt-3">
+                        <div id="kt_customers_table_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-row-dashed fs-6 gy-5 dataTable no-footer table_main"
+                                       id="kt_customers_table">
+                                    <thead>
+                                    <tr class="text-start text-gray-400 fw-bolder">
+                                        <th class="min-w-125px sorting">Sr no</th>
+                                        <th class="min-w-125px sorting">Employee Name</th>
+                                        <th class="min-w-125px sorting">Card Link</th>
+                                        <th class="min-w-125px sorting">Assign Date</th>
+                                        <th class="min-w-125px sorting">Mentor</th>
+                                        <th class="min-w-125px sorting">priority</th>
+                                        {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+
+                                        <th class="text-end min-w-70px sorting_disabled">Actions
+                                        </th>
+                                        {% endif %}
+                                    </tr>
+                                    </thead>
+                                    <tbody class="fw-bold text-gray-600" id="tableBody">
+                                        <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start"></div>
+                    <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+                        <div class="dataTables_paginate paging_simple_numbers" id="kt_customers_table_paginate">
+                            <ul class="pagination">
+                                <li></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" style="border-radius: 25px;" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Update Task</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm">
+                        <input type="hidden" id="taskId" name="taskId">
+                        <div class="form-group">
+                            <label for="updateName">Employee Name:</label>
+                            <input type="text" class="form-control" id="updateName" name="updateName" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateCardLink">Card Link:</label>
+                            <input type="text" class="form-control" id="updateCardLink" name="updateCardLink">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateAssignDate">Assign Date:</label>
+                            <input type="date" class="form-control" id="updateAssignDate" name="updateAssignDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateMentor">Mentor:</label>
+<!--                            <input type="text" class="form-control" id="updateMentor" name="updateMentor">-->
+                             <select class="form-control" id="updateMentor" required>
+                            <option value="">Select Mentor</option>
+                            <option value="Harsh Modi">Harsh Modi</option>
+                            <option value="Kishan Patel">Kishan Patel</option>
+                            <option value="Rahul Patel">Rahul Patel</option>
+                            <option value="Harsh Sompura">Harsh Sompura</option>
+                            <option value="Dhaval Gajjar">Dhaval Gajjar</option>
+                            <option value="Vishal Tanna">Vishal Tanna</option>
+                            <option value="Aakanksha Neliwer">Aakanksha Neliwer</option>
+                            <option value="Bansari Goswami">Bansari Goswami</option>
+                            <option value="Sandeep Makvana">Sandeep Makvana</option>
+                            <!-- Add more options as needed -->
+                        </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="updatePriority">Priority:</label>
+                            <select class="form-control" id="updatePriority" name="updatePriority">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <button type="button" class="button_mian" style="display: block;margin: 0 auto;" onclick="submitUpdateForm()">Update
+                        </button>
+                    </form>
+                </div>
+            </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add Employee Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm">
+
+                    <div class="form-group">
+                        <label for="cardLink">Card Link:</label>
+                        <input type="text" class="form-control" id="cardLink" name="cardLink" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignDate">Assign Date:</label>
+                        <input type="date" class="form-control" id="assignDate" name="assignDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mentor">Mentor:</label>
+                        <select class="form-control" id="mentor" required>
+                            <option value="">Select Mentor</option>
+                            <option value="Harsh Modi">Harsh Modi</option>
+                            <option value="Kishan Patel">Kishan Patel</option>
+                            <option value="Rahul Patel">Rahul Patel</option>
+                            <option value="Harsh Sompura">Harsh Sompura</option>
+                            <option value="Dhaval Gajjar">Dhaval Gajjar</option>
+                            <option value="Vishal Tanna">Vishal Tanna</option>
+                            <option value="Aakanksha Neliwer">Aakanksha Neliwer</option>
+                            <option value="Bansari Goswami">Bansari Goswami</option>
+                            <option value="Sandeep Makvana">Sandeep Makvana</option>
+                            <!-- Add more options as needed -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority:</label>
+                        <select class="form-control" id="priority" name="priority" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="display: block;margin: 0 auto;" class="button_mian">Add Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this item?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+    {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+    <script>
+
+
+     function searchEmployeeTasks() {
+                    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+                    const tableBody = document.getElementById('tableBody');
+
+                    // Fetch data from API
+                    fetch('http://127.0.0.1:8000/emp-task/')
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear existing table rows
+                            tableBody.innerHTML = '';
+
+                            // Filter data based on search term in employee name
+                            const filteredData = data.filter(task => task.E_name.toLowerCase().includes(searchTerm));
+
+                            // Populate table rows with filtered data
+                            filteredData.forEach((task, index) => {
+                                const row = document.createElement('tr');
+                                row.id = `employeeTaskRow${task.id}`;
+                                row.innerHTML = `
+                                <tr id="task_${task.id}">
+                                    <td>${index + 1}</td>
+                                    <td>${task.E_name}</td>
+                                    <td>${task.E_Card_Link}</td>
+                                    <td>${task.E_Assign_Date}</td>
+                                    <td>${task.E_Mentor}</td>
+                                    <td>${task.E_Priority}</td>
+                                    {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+                                    <td class="editbtns">
+                                        <button class="btn btn-danger text-danger . bg-light" onclick="toggleActionMenu(${task.id})">...</button>
+                                        <div id="actionMenu_${task.id}" class="action-menu hidden mt-2">
+                                            <button class="btn btn-primary text-primary . bg-light"  onclick="updateTask(${task.id})">Update</button>
+                                            <button class="btn btn-danger text-danger . bg-light"  onclick="displayDeleteConfirmationModal(${task.id})">Delete</button>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                `;
+                                tableBody.appendChild(row);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching employee tasks:', error));
+                }
+
+
+             // Prevent default form submission behavior and call searchEmployeeTasks() function
+             document.querySelector('.search-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    searchEmployeeTasks();
+             });
+
+
+
+
+        // Function to handle deleting a task
+    function deleteTask(id) {
+        $.ajax({
+            url: `http://127.0.0.1:8000/emp-task/${id}/`,
+            type: 'DELETE',
+            success: function(result) {
+                console.log(`Task with ID ${id} deleted successfully`);
+                // Remove the deleted task row from the table
+                $(`#task_${id}`).remove();
+                // Trigger custom event for task deletion (optional)
+                $(document).trigger('taskDeleted', id);
+            },
+            error: function(xhr, status, error) {
+                console.error(`Error deleting task: ${error}`);
+                // Optionally provide feedback to the user about the error
+                alert(`Error deleting task: ${error}`);
+            }
+        });
+    }
+
+    function displayDeleteConfirmationModal(requestId) {
+        // Store the request ID in a data attribute of the confirmation modal
+        $('#deleteConfirmationModal').data('request-id', requestId);
+        // Show the modal
+        $('#deleteConfirmationModal').modal('show');
+    }
+
+    // Event listener for delete button click
+    $('.deleteBtn').on('click', function() {
+        // Get the request ID from the delete button's data attribute
+        const requestId = $(this).data('request-id');
+        displayDeleteConfirmationModal(requestId);
+    });
+
+    // Event listener for confirm delete button click
+    $('#confirmDeleteBtn').on('click', function() {
+        // Get the request ID from the data attribute of the confirmation modal
+        const requestId = $('#deleteConfirmationModal').data('request-id');
+        // Call the deleteRecord function to perform the deletion
+        deleteTask(requestId);
+        // Close the modal
+        $('#deleteConfirmationModal').modal('hide');
+    });
+
+
+        // Function to fetch data from the API and populate the table
+        function fetchDataAndPopulateTable() {
+            // Fetch data and populate table
+            $.ajax({
+                url: 'http://127.0.0.1:8000/emp-task/',
+                type: 'GET',
+                success: function(data) {
+                    const tableBody = $('#kt_customers_table tbody');
+                    // Clear existing table <<rows></rows></rows>
+                    tableBody.empty();
+                    // Populate table rows with data
+                    data.forEach((task, index) => {
+                        const row = `
+                            <tr id="task_${task.id}">
+                                <td>${index + 1}</td>
+                                <td>${task.E_name}</td>
+                                <td>${task.E_Card_Link}</td>
+                                <td>${task.E_Assign_Date}</td>
+                                <td>${task.E_Mentor}</td>
+                                <td>${task.E_Priority}</td>
+                                {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+                                <td class="editbtns">
+                                    <button class="btn btn-danger text-danger . bg-light" onclick="toggleActionMenu(${task.id})">...</button>
+                                    <div id="actionMenu_${task.id}" class="action-menu hidden mt-2" style="display: none;">
+                                        <button class="btn btn-primary text-primary bg-light"  onclick="updateTask(${task.id})">Update</button>
+                                        <button  class="btn btn-danger text-danger bg-light"  onclick="displayDeleteConfirmationModal(${task.id})">Delete</button>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            `;
+                        tableBody.append(row);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching tasks:', error);
+                }
+            });
+        }
+
+        // Toggle action menu
+        function toggleActionMenu(taskId) {
+            const actionMenu = $(`#actionMenu_${taskId}`);
+            actionMenu.slideToggle(); // This will toggle the slide effect
+        }
+
+
+        // Click outside handler for action menu
+        function clickOutsideHandler(e) {
+            if (!$(e.target).closest('.action-menu').length && !$(e.target).closest('.btn-danger').length) {
+                $('.action-menu').addClass('hidden');
+                // Remove event listener after closing action menu
+                $(document).off('click', clickOutsideHandler);
+            }
+        }
+
+        // Listen for taskDeleted event and update table
+        $(document).on('taskDeleted', function(event, id) {
+            // Remove the deleted task row from the table
+            $(`#task_${id}`).remove();
+        });
+
+        // Call the function to fetch data and populate the table when the document is ready
+        $(document).ready(function() {
+            fetchDataAndPopulateTable();
+        });
+
+        // Add click outside handler when action menu is toggled
+        $(document).on('click', '.btn-danger', function() {
+            $(document).on('click', clickOutsideHandler);
+        });
+
+
+           function updateTask(taskId) {
+            if (!taskId) {
+                console.error('Task ID is undefined');
+                return;
+            }
+            // Fetch task details based on taskId and populate the update form fields
+            fetch(`http://127.0.0.1:8000/emp-task/${taskId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('taskId').value = data.id;
+                    document.getElementById('updateName').value = data.E_name;
+                    document.getElementById('updateCardLink').value = data.E_Card_Link;
+                    document.getElementById('updateAssignDate').value = data.E_Assign_Date;
+                    document.getElementById('updateMentor').value = data.E_Mentor;
+                    document.getElementById('updatePriority').value = data.E_Priority;
+
+                    // Show the update modal
+                    $('#updateModal').modal('show');
+                })
+                .catch(error => console.error('Error fetching task details:', error));
+        }
+
+        function submitUpdateForm() {
+            const taskId = $('#taskId').val();
+            const updatedName = $('#updateName').val();
+            const updatedCardLink = $('#updateCardLink').val();
+            const updatedAssignDate = $('#updateAssignDate').val();
+            const updatedMentor = $('#updateMentor').val();
+            const updatedPriority = $('#updatePriority').val();
+
+            const token = localStorage.getItem('accessToken');
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            let data1 = JSON.parse(jsonPayload)
+
+            fetch(`http://127.0.0.1:8000/emp-task/${taskId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'Bearer '+ token,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    employee: data1.user_id,
+                    E_name: updatedName,
+                    E_Card_Link: updatedCardLink,
+                    E_Assign_Date: updatedAssignDate,
+                    E_Mentor: updatedMentor,
+                    E_Priority: updatedPriority
+                    // Add other fields to update here
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update task');
+                }
+                console.log('Task updated successfully');
+                // Close the update modal
+                $('#updateModal').modal('hide');
+                // Refresh task data in the table
+                fetchDataAndPopulateTable(); // Call the function to repopulate the table
+            })
+            .catch(error => console.error('Error updating task:', error));
+        }
+
+
+</script>
+    {% else %}
+    <script>
+
+
+        // Function to handle deleting a task
+    function deleteTask(id) {
+        $.ajax({
+            url: `http://127.0.0.1:8000/taskuser/${id}/`,
+            type: 'DELETE',
+            success: function(result) {
+                console.log(`Task with ID ${id} deleted successfully`);
+                // Remove the deleted task row from the table
+                $(`#task_${id}`).remove();
+                // Trigger custom event for task deletion (optional)
+                $(document).trigger('taskDeleted', id);
+            },
+            error: function(xhr, status, error) {
+                console.error(`Error deleting task: ${error}`);
+                // Optionally provide feedback to the user about the error
+                alert(`Error deleting task: ${error}`);
+            }
+        });
+    }
+
+    function displayDeleteConfirmationModal(requestId) {
+        // Store the request ID in a data attribute of the confirmation modal
+        $('#deleteConfirmationModal').data('request-id', requestId);
+        // Show the modal
+        $('#deleteConfirmationModal').modal('show');
+    }
+
+    // Event listener for delete button click
+    $('.deleteBtn').on('click', function() {
+        // Get the request ID from the delete button's data attribute
+        const requestId = $(this).data('request-id');
+        displayDeleteConfirmationModal(requestId);
+    });
+
+    // Event listener for confirm delete button click
+    $('#confirmDeleteBtn').on('click', function() {
+        // Get the request ID from the data attribute of the confirmation modal
+        const requestId = $('#deleteConfirmationModal').data('request-id');
+        // Call the deleteRecord function to perform the deletion
+        deleteTask(requestId);
+        // Close the modal
+        $('#deleteConfirmationModal').modal('hide');
+    });
+
+
+        // Function to fetch data from the API and populate the table
+        const token = localStorage.getItem('accessToken');
+
+        function fetchDataAndPopulateTable() {
+            // Fetch data and populate table
+
+            $.ajax({
+                url: 'http://127.0.0.1:8000/taskuser/',
+                type: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                success: function(data) {
+                    const tableBody = $('#kt_customers_table tbody');
+                    // Clear existing table <<rows></rows></rows>
+                    tableBody.empty();
+                    // Populate table rows with data
+                    data.forEach((task, index) => {
+                        const row = `
+                            <tr id="task_${task.id}">
+                                <td>${index + 1}</td>
+                                <td>${task.E_name}</td>
+                                <td>${task.E_Card_Link}</td>
+                                <td>${task.E_Assign_Date}</td>
+                                <td>${task.E_Mentor}</td>
+                                <td>${task.E_Priority}</td>
+                                {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+                                <td class="editbtns">
+                                    <button class="btn btn-danger text-danger  bg-light" onclick="toggleActionMenu(${task.id})">...</button>
+                                    <div id="actionMenu_${task.id}" class="action-menu hidden mt-2" style="display: none !important;">
+                                        <button class="btn btn-primary text-primary bg-light"  onclick="updateTask(${task.id})">Update</button>
+                                        <button  class="btn btn-danger text-danger bg-light"  onclick="displayDeleteConfirmationModal(${task.id})">Delete</button>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            `;
+                        tableBody.append(row);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching tasks:', error);
+                }
+            });
+        }
+
+        // Toggle action menu
+        function toggleActionMenu(taskId) {
+            const actionMenu = $(`#actionMenu_${taskId}`);
+            actionMenu.slideToggle(); // This will toggle the slide effect
+        }
+
+
+        // Click outside handler for action menu
+        function clickOutsideHandler(e) {
+            if (!$(e.target).closest('.action-menu').length && !$(e.target).closest('.btn-danger').length) {
+                $('.action-menu').addClass('hidden');
+                // Remove event listener after closing action menu
+                $(document).off('click', clickOutsideHandler);
+            }
+        }
+
+        // Listen for taskDeleted event and update table
+        $(document).on('taskDeleted', function(event, id) {
+            // Remove the deleted task row from the table
+            $(`#task_${id}`).remove();
+        });
+
+        // Call the function to fetch data and populate the table when the document is ready
+        $(document).ready(function() {
+            fetchDataAndPopulateTable();
+        });
+
+        // Add click outside handler when action menu is toggled
+        $(document).on('click', '.btn-danger', function() {
+            $(document).on('click', clickOutsideHandler);
+        });
+
+
+            function updateTask(taskId) {
+            if (!taskId) {
+                console.error('Task ID is undefined');
+                return;
+            }
+            // Fetch task details based on taskId and populate the update form fields
+            fetch(`http://127.0.0.1:8000/taskuser/${taskId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('taskId').value = data.id;
+                    document.getElementById('updateName').value = data.E_name;
+                    document.getElementById('updateCardLink').value = data.E_Card_Link;
+                    document.getElementById('updateAssignDate').value = data.E_Assign_Date;
+                    document.getElementById('updateMentor').value = data.E_Mentor;
+                    document.getElementById('updatePriority').value = data.E_Priority;
+
+                    // Show the update modal
+                    $('#updateModal').modal('show');
+                })
+                .catch(error => console.error('Error fetching task details:', error));
+        }
+
+        function submitUpdateForm() {
+            const taskId = $('#taskId').val();
+            const updatedName = $('#updateName').val();
+            const updatedCardLink = $('#updateCardLink').val();
+            const updatedAssignDate = $('#updateAssignDate').val();
+            const updatedMentor = $('#updateMentor').val();
+            const updatedPriority = $('#updatePriority').val();
+
+            const token = localStorage.getItem('accessToken');
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            let data1 = JSON.parse(jsonPayload)
+
+            fetch(`http://127.0.0.1:8000/taskuser/${taskId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    employee: data1.user_id,
+                    E_name: updatedName,
+                    E_Card_Link: updatedCardLink,
+                    E_Assign_Date: updatedAssignDate,
+                    E_Mentor: updatedMentor,
+                    E_Priority: updatedPriority
+                    // Add other fields to update here
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update task');
+                }
+                console.log('Task updated successfully');
+                // Close the update modal
+                $('#updateModal').modal('hide');
+                // Refresh task data in the table
+                fetchDataAndPopulateTable(); // Call the function to repopulate the table
+            })
+            .catch(error => console.error('Error updating task:', error));
+        }
+
+
+</script>
+    {% endif %}
+
+<script>
+    // Function to filter tasks based on priority
+function filterTasksByPriority() {
+    const selectedPriority = document.getElementById('priority_search').value;
+    const allRows = document.querySelectorAll('#kt_customers_table tbody tr');
+
+    allRows.forEach(row => {
+        const priorityCell = row.querySelector('td:nth-child(6)'); // 6th cell contains priority
+        if (selectedPriority === '' || priorityCell.textContent.trim() === selectedPriority) {
+            row.style.display = ''; // Show row if priority matches or no priority selected
+        } else {
+            row.style.display = 'none'; // Hide row if priority doesn't match
+        }
+    });
+}
+
+// Function to handle search button click event
+document.querySelector('.button_mian').addEventListener('click', filterTasksByPriority);
+
+
+
+document.getElementById('addTaskButton').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent default behavior of the button, like form submission or page navigation
+
+    // Show the add record popup/modal
+    $('#addTaskModal').modal('show');
+});
+function displayAddTaskModal() {
+    // Clear any previous data in the form fields
+    document.getElementById("taskName").value = "";
+    document.getElementById("cardLink").value = "";
+    document.getElementById("assignDate").value = "";
+    document.getElementById("mentor").value = "";
+    document.getElementById("priority").value = "";
+
+    // Change modal title to indicate adding a new task
+    document.getElementById("exampleModalLabel").innerText = "Add Task";
+
+    // Show the modal
+    $('#addTaskModal').modal('show');
+}
+
+// Function to add a new employee task
+function addEmployeeTask() {
+    // Get form data
+    //const name = $('#taskName').val().trim();
+    const cardLink = $('#cardLink').val();
+    const assignDate = $('#assignDate').val();
+    const mentor = $('#mentor').val();
+    const priority = $('#priority').val();
+
+    // Validate input values (optional)
+    //if (typeof name !== 'string' || name === '') {
+    //    alert('Task name must be provided.');
+    //    return;
+    //}
+
+    const token = localStorage.getItem('accessToken');
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    let data1 = JSON.parse(jsonPayload)
+
+    // Create new task object
+    const newTask = {
+        employee: data1.user_id,
+        //E_name: name,
+        E_Card_Link: cardLink,
+        E_Assign_Date: assignDate,
+        E_Mentor: mentor,
+        E_Priority: priority
+    };
+
+    // Send POST request to API endpoint
+    $.ajax({
+        url: 'http://127.0.0.1:8000/emp-task/', // Replace with your API endpoint
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(newTask),
+        success: function(response) {
+            // Task added successfully
+            console.log('Employee task added successfully.');
+
+            // Close the modal
+            $('#addTaskModal').modal('hide');
+
+            // Optionally, you can refresh the data table or perform any other actions
+            // For example, you can fetch the updated data and repopulate the table
+            fetchDataAndPopulateTable();
+        },
+        error: function(xhr, status, error) {
+            // Error adding task
+            console.error('Failed to add employee task:', error);
+            // Optionally, you can display an error message to the user
+        }
+    });
+}
+
+// Event listener for form submission
+$('#addTaskForm').submit(function(event) {
+    event.preventDefault(); // Prevent default form submission
+    addEmployeeTask(); // Call addEmployeeTask function to add the task
+});
+
+
+</script>
+
+
+<script>
+         document.addEventListener('DOMContentLoaded', function () {
+         // Function to display employee task data in the table
+         function displayEmployeeTaskData(data) {
+             var tableBody = document.getElementById('tableBody');
+             tableBody.innerHTML = ''; // Clear existing table rows
+
+             // Check if data is empty
+             if (data.length === 0) {
+                 tableBody.innerHTML = '<tr><td colspan="6">There are no records found.</td></tr>';
+                 return;
+             }
+
+             data.forEach(function (task, index) {
+                 var row = `
+                     <tr>
+                         <td>${index + 1}</td>
+                         <td>${task.E_name}</td>
+                         <td>${task.E_Card_Link}</td>
+                         <td>${task.E_Assign_Date}</td>
+                         <td>${task.E_Mentor}</td>
+                         <td>${task.E_Priority}</td>
+                         <td class="editbtns">
+                                    <button class="btn btn-danger text-danger . bg-light" onclick="toggleActionMenu(${task.id})">...</button>
+                                    <div id="actionMenu_${task.id}" class="action-menu hidden mt-2" style="display: none;">
+                                        <button class="btn btn-primary text-primary bg-light"  onclick="updateTask(${task.id})">Update</button>
+                                        <button  class="btn btn-danger text-danger bg-light"  onclick="displayDeleteConfirmationModal(${task.id})">Delete</button>
+                                    </div>
+                         </td>
+                     </tr>
+                 `;
+                 tableBody.innerHTML += row;
+             });
+         }
+
+
+         // Toggle action menu
+        function toggleActionMenu(taskId) {
+            const actionMenu = $(`#actionMenu_${taskId}`);
+            actionMenu.slideToggle(); // This will toggle the slide effect
+        }
+
+
+        // Click outside handler for action menu
+        function clickOutsideHandler(e) {
+            if (!$(e.target).closest('.action-menu').length && !$(e.target).closest('.btn-danger').length) {
+                $('.action-menu').addClass('hidden');
+                // Remove event listener after closing action menu
+                $(document).off('click', clickOutsideHandler);
+            }
+        }
+
+         // Function to filter employee task records based on selected month
+         function filterEmployeeTaskRecords(data, month) {
+             // Filter data based on selected month
+             var filteredData = data.filter(function (task) {
+                 return !month || task.E_Assign_Date.startsWith(month);
+             });
+
+             // Display filtered data
+             displayEmployeeTaskData(filteredData);
+         }
+
+         // Event listener for search button click (for month)
+         document.getElementById('searchButton1').addEventListener('click', function () {
+             var month = document.getElementById('month').value;
+
+             // Fetch all employee task records
+             fetch('http://127.0.0.1:8000/emp-task/')
+                 .then(response => response.json())
+                 .then(data => {
+                     // Filter and display records based on selected month
+                     filterEmployeeTaskRecords(data, month);
+                 })
+                 .catch(error => {
+                     console.error('Error fetching data:', error);
+                 });
+         });
+        });
+
+</script>
+
+
+{% endblock main-content %}
+
+
+
+
+
+
+
+
+
