@@ -377,13 +377,16 @@
         });
 
 
+        $(document).ready(function() {
 
-        // Add event listeners for delete buttons
+    // Add event listeners for delete buttons
         $('.btn-delete').on('click', function() {
             const leaveId = $(this).data('id');
             $('#deleteConfirmationModal').modal('show');
             $('#confirmDeleteBtn').data('leave-id', leaveId); // Store leave ID in the confirm delete button
         });
+
+});
 
         // Event listener for confirm delete button click
         $('#confirmDeleteBtn').on('click', function() {
@@ -423,6 +426,85 @@
         });
     }
 });
+
+    // Function to create a table row for an employee
+function createEmployeeRow(employee,index) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${index}</td>
+        <td>${employee.emp_name}</td>
+        <td>${employee.leave_type}</td>
+        <td>${employee.start_date}</td>
+        <td>${employee.end_date}</td>
+        <td>${employee.leave_days}</td>
+        <td>${employee.leave_reason}</td>
+        <td>${employee.approval_status}</td>
+         <td class="editbtns">
+                        <button class="btn btn-danger text-danger bg-light" onclick="toggleActionMenu(${employee.id})">...</button>
+                        <div id="actionMenu_${employee.id}" class="action-menu hidden mt-2" style="display: none;">
+                            <button class="btn btn-primary btn-update" onclick="updateFunction(${employee.id})">Update</button>
+                            <button class="btn btn-danger btn-delete" data-id="${employee.id}">Delete</button>
+                        </div>
+         </td>
+
+    `;
+    return row;
+}
+
+// Function to search employees by name
+function searchEmployees() {
+    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+    if (!searchInput){
+       return;
+    }
+    const searchResultsTableBody = document.getElementById('searchResults');
+
+    // Fetch data from API
+    const token = localStorage.getItem('accessToken');
+    fetch('http://127.0.0.1:8000/employee-leave/', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch employee leave data');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Check if the response data is an array
+        if (!Array.isArray(data)) {
+            throw new Error('Invalid data format received from the server');
+        }
+
+        // Clear existing table rows
+        searchResultsTableBody.innerHTML = '';
+
+        // Filter data based on search term
+        const filteredData = data.filter(employee => employee.emp_name.toLowerCase().includes(searchTerm));
+
+        // Populate table rows with filtered data
+        if (filteredData.length === 0) {
+            // If no matching records found, display a message
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="8">No records found</td>`;
+            searchResultsTableBody.appendChild(row);
+        } else {
+            filteredData.forEach((employee,index) => {
+                const row = createEmployeeRow(employee,index+1);
+                searchResultsTableBody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching employee data:', error);
+        // Display an error message to the user or handle the error appropriately
+    });
+}
+
+
 
 </script>
 {% else %}
@@ -887,14 +969,20 @@ function displayEmployeeLeaveData(data, monthFilter, leaveTypeFilter) {
                  </td>
                 {% endif %}
             </tr>
+
         `;
         tableBody.append(row);
+
     });
 }
 
 document.getElementById('searchButton').addEventListener('click', function () {
     var month = document.getElementById('month').value;
     var leaveType = document.getElementById('leavetypesearch').value;
+
+    if (!month && !leavetypesearch){
+       return;
+    }
 
     // Retrieve authentication token from wherever it's stored (e.g., local storage)
     var token = localStorage.getItem('accessToken'); // Adjust this according to your token storage mechanism
@@ -908,14 +996,21 @@ document.getElementById('searchButton').addEventListener('click', function () {
         success: function(data) {
             // Display fetched data
             console.log(data);
+
             displayEmployeeLeaveData(data, month, leaveType);
+            updateSerialNumbers();
+
         },
         error: function(xhr, status, error) {
             console.error('Error fetching data:', error);
         }
     });
 });
-
+     function updateSerialNumbers() {
+            $('#kt_customers_table tbody tr').each(function(index) {
+                $(this).find('td:first').text(index + 1);
+            });
+        }
 
 
 // Toggle action menu for employee leave
@@ -958,80 +1053,6 @@ document.getElementById('searchButton').addEventListener('click', function () {
 </script>
 
 
-<script>
-// Function to create a table row for an employee
-function createEmployeeRow(employee,index) {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${index}</td>
-        <td>${employee.emp_name}</td>
-        <td>${employee.leave_type}</td>
-        <td>${employee.start_date}</td>
-        <td>${employee.end_date}</td>
-        <td>${employee.leave_days}</td>
-        <td>${employee.leave_reason}</td>
-        <td>${employee.approval_status}</td>
-         <td class="editbtns">
-                        <button class="btn btn-danger text-danger bg-light" onclick="toggleActionMenu(${employee.id})">...</button>
-                        <div id="actionMenu_${employee.id}" class="action-menu hidden mt-2" style="display: none;">
-                            <button class="btn btn-primary btn-update" onclick="updateFunction(${employee.id})">Update</button>
-                            <button class="btn btn-danger btn-delete" data-id="${employee.id}">Delete</button>
-                        </div>
-         </td>
-
-    `;
-    return row;
-}
-
-// Function to search employees by name
-function searchEmployees() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-    const searchResultsTableBody = document.getElementById('searchResults');
-
-    // Fetch data from API
-    const token = localStorage.getItem('accessToken');
-    fetch('http://127.0.0.1:8000/employee-leave/', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch employee leave data');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Check if the response data is an array
-        if (!Array.isArray(data)) {
-            throw new Error('Invalid data format received from the server');
-        }
-
-        // Clear existing table rows
-        searchResultsTableBody.innerHTML = '';
-
-        // Filter data based on search term
-        const filteredData = data.filter(employee => employee.emp_name.toLowerCase().includes(searchTerm));
-
-        // Populate table rows with filtered data
-        if (filteredData.length === 0) {
-            // If no matching records found, display a message
-            const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="8">No records found</td>`;
-            searchResultsTableBody.appendChild(row);
-        } else {
-            filteredData.forEach((employee,index) => {
-                const row = createEmployeeRow(employee,index+1);
-                searchResultsTableBody.appendChild(row);
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching employee data:', error);
-        // Display an error message to the user or handle the error appropriately
-    });
-}
-</script>
 
 
 

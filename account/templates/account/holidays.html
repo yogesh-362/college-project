@@ -276,6 +276,7 @@ function deleteHoliday(holidayId) {
             const row = document.getElementById(`holidayRow${holidayId}`);
             if (row) {
                 row.remove();
+                updateSerialNumbers();
                 console.log(`Holiday with ID ${holidayId} deleted successfully`);
             } else {
                 console.error(`Failed to find holiday row with ID ${holidayId}`);
@@ -284,6 +285,13 @@ function deleteHoliday(holidayId) {
         error: function(xhr, status, error) {
             console.error(`Failed to delete holiday with ID ${holidayId}: ${error}`);
         }
+    });
+}
+function updateSerialNumbers() {
+    // Select all table rows in the tbody
+    $('#holidayTableBody tr').each(function(index) {
+        // Update the text of the first <td> in each row to be the index + 1
+        $(this).find('td:first').text(index + 1);
     });
 }
 
@@ -318,6 +326,10 @@ $("#cancelDeleteBtn").on("click", function() {
                 const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
                 const holidayTableBody = document.getElementById('holidayTableBody');
 
+                if (!searchTerm){
+                  return;
+                }
+
                 // Fetch data from API
                 fetch('http://127.0.0.1:8000/holidays/')
                     .then(response => response.json())
@@ -326,12 +338,13 @@ $("#cancelDeleteBtn").on("click", function() {
                         holidayTableBody.innerHTML = '';
 
                         // Filter data based on search term
-                        const filteredData = data.filter(holiday => holiday.holiday_name.toLowerCase().includes(searchTerm));
+                        const filteredData = data.filter(holiday => holiday.holiday_name.toLowerCase().startsWith(searchTerm));
 
                         // Populate table rows with filtered data
                         filteredData.forEach((holiday, index) => {
                             const row = createHolidayRow(holiday, index);
                             holidayTableBody.appendChild(row);
+                            updateSerialNumbers();
                         });
                     })
                     .catch(error => console.error('Error fetching holidays:', error));
@@ -462,58 +475,7 @@ $(document).ready(function() {
 });
 
 </script>
-<script>
 
-    // Function to delete an employee
-function deleteEmployee(employeeId) {
-    // Send delete request using fetch
-    fetch(`http://127.0.0.1:8000/employees/${employeeId}/`, {
-        method: 'DELETE',
-    })
-    .then(response => {
-        if (response.ok) {
-            // Employee deleted successfully
-            console.log(`Employee with ID ${employeeId} deleted successfully`);
-            // Remove the corresponding row from the table
-            const row = document.getElementById(`employeeRow${employeeId}`);
-            if (row) {
-                row.remove();
-            }
-        } else {
-            // Error deleting employee
-            console.error(`Failed to delete employee with ID ${employeeId}`);
-        }
-    })
-    .catch(error => console.error(`Failed to delete employee with ID ${employeeId}: ${error}`));
-}
-
-// Function to display the delete confirmation modal
-function displayDeleteConfirmationModal(employeeId) {
-    // Store the employee ID in a data attribute of the confirmation modal
-    $("#deleteEmployeeConfirmationModal").data("employee-id", employeeId);
-    $("#deleteEmployeeConfirmationModal").modal("show"); // Show the modal
-}
-
-// Function to hide the delete confirmation modal
-function hideDeleteConfirmationModal() {
-    $("#deleteEmployeeConfirmationModal").modal("hide"); // Hide the modal
-}
-
-// Event listener for the "Delete" button click in the confirmation modal
-$("#confirmDeleteEmployeeBtn").on("click", function() {
-    hideDeleteConfirmationModal(); // Hide the confirmation modal
-    // Get the employee ID from the data attribute of the confirmation modal
-    var employeeId = $("#deleteEmployeeConfirmationModal").data("employee-id");
-    // Call the deleteEmployee function to perform the deletion
-    deleteEmployee(employeeId);
-});
-
-// Event listener for the "Cancel" button click in the confirmation modal
-$("#cancelDeleteEmployeeBtn").on("click", function() {
-    hideDeleteConfirmationModal(); // Hide the confirmation modal
-});
-
-</script>
 
 {% endblock main-content %}
 

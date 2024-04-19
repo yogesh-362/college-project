@@ -7,7 +7,8 @@
 <div class="container-xxl">
     <div class="card">
        <div class="card-header border-0 pt-6 d-flex justify-content-between align-items-center bg-light box_header_main box_header_main11">
-    <form class="search-form d-flex align-items-center employeeLeave" action="http://127.0.0.1:8000/in-out/" method="get">
+       {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+        <form class="search-form d-flex align-items-center employeeLeave" action="http://127.0.0.1:8000/in-out/" method="get">
 
              <div class="input-group">
                  <label for="month" class="visually-hidden">Search</label>
@@ -17,7 +18,7 @@
                  <button class="button_mian" type="submit" name="searchButton" id="searchButton" fdprocessedid="48081" onclick="searchInOut()">Search</button>
              </div>
     </form>
-
+        {% endif %}
 
      <form action="http://127.0.0.1:8000/in-out/" class="d-flex align-items-center employeeLeave">
 
@@ -345,55 +346,58 @@ $('#confirmDeleteBtn').on('click', function() {
 });
 
 
+
 function searchInOut() {
-        const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-        const inOutTableBody = document.getElementById('inOutTableBody');
+    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+    const inOutTableBody = document.getElementById('inOutTableBody');
 
-         if(!searchTerm) {
-         return;
-        }
-
-        // Fetch data from API
-        fetch('http://127.0.0.1:8000/in-out/')
-            .then(response => response.json())
-            .then(data => {
-                // Clear existing table rows
-                inOutTableBody.innerHTML = '';
-
-                // Filter data based on search term
-                const filteredData = data.filter(record => record.name.toLowerCase().includes(searchTerm));
-
-                // Populate table rows with filtered data
-                filteredData.forEach((record, index) => {
-                    const row = document.createElement('tr');
-                    row.id = `inOutRequestRow${record.id}`;
-                    row.innerHTML = `
-                        <td>${record.name}</td>
-                        <td>${record.date}</td>
-                        <td>${record.type}</td>
-                        <td>${record.reason}</td>
-                        <td>${record.approvel_status}</td>
-                        {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
-                        <td class="editbtns">
-                            <button class="btn btn-danger text-danger . bg-light" onclick="toggleActionMenu(${record.id})">...</button>
-                            <div id="actionMenu_${record.id}" class="action-menu hidden mt-2">
-                                <button class="btn btn-primary text-primary . bg-light"  onclick="updateRecord(${record.id})">Update</button>
-                                <button class="btn btn-danger text-danger . bg-light"  onclick="displayDeleteConfirmationModal(${record.id})">Delete</button>
-                            </div>
-                        </td>
-                        {% endif %}
-                    `;
-                    inOutTableBody.appendChild(row);
-                });
-            })
-            .catch(error => console.error('Error fetching in-out records:', error));
+    // If search term is empty, do nothing
+    if (!searchTerm) {
+        return;
     }
 
-    // Prevent default form submission behavior and call searchInOut() function
-    document.querySelector('.search-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        searchInOut();
-    });
+    // Fetch data from API
+    fetch('http://127.0.0.1:8000/in-out/')
+        .then(response => response.json())
+        .then(data => {
+            // Clear existing table rows
+            inOutTableBody.innerHTML = '';
+
+            // Filter data based on search term and exclude records with "Accepted" status
+            const filteredData = data.filter(record =>
+                record.name.toLowerCase().startsWith(searchTerm) && record.approvel_status.toLowerCase() !== "accepted");
+
+            // Populate table rows with filtered data
+            filteredData.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.id = `inOutRequestRow${record.id}`;
+                row.innerHTML = `
+                    <td>${record.name}</td>
+                    <td>${record.date}</td>
+                    <td>${record.type}</td>
+                    <td>${record.reason}</td>
+                    <td>${record.approvel_status}</td>
+                    {% if request.user.emp_role == "Admin" or request.user.emp_role == "HR" %}
+                    <td class="editbtns">
+                        <button class="btn btn-danger text-danger . bg-light" onclick="toggleActionMenu(${record.id})">...</button>
+                        <div id="actionMenu_${record.id}" class="action-menu hidden mt-2" style="display:none;">
+                            <button class="btn btn-primary text-primary . bg-light"  onclick="updateRecord(${record.id})">Update</button>
+                            <button class="btn btn-danger text-danger . bg-light"  onclick="displayDeleteConfirmationModal(${record.id})">Delete</button>
+                        </div>
+                    </td>
+                    {% endif %}
+                `;
+                inOutTableBody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Error fetching in-out records:', error));
+}
+
+// Prevent default form submission behavior and call searchInOut() function
+document.querySelector('.search-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    searchInOut();
+});
 
 
      function updateRecord(recordId) {

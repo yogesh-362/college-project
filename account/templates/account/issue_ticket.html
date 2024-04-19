@@ -357,15 +357,23 @@ $(document).ready(function() {
             if (name.includes(searchValue) || date.includes(searchValue)) {
                 // If it does, show the row
                 row.style.display = '';
+
             } else {
                 // If it doesn't, hide the row
                 row.style.display = 'none';
             }
         });
+
     }
 
     // Attach event listener to the search button
     document.getElementById('searchButton').addEventListener('click', search);
+
+     function updateSerialNumbers() {
+        $('#ticketTableBody tbody tr').each(function(index) {
+            $(this).find('td:first').text(index + 1);
+        });
+    }
 </script>
 
 {% endblock main-content %}

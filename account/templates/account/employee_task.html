@@ -318,6 +318,7 @@
                 console.log(`Task with ID ${id} deleted successfully`);
                 // Remove the deleted task row from the table
                 $(`#task_${id}`).remove();
+                location.reload(true);
                 // Trigger custom event for task deletion (optional)
                 $(document).trigger('taskDeleted', id);
             },
