@@ -10,13 +10,22 @@
     <link rel="stylesheet" href="{% static 'account/css/authentication.css' %}" type="text/css">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-
-
     <title>Login & Registration Form</title>
+      <style>
+       body {
+    background-image: url("https://tse3.mm.bing.net/th?id=OIP.kUUmY3W5qC70GpCVCZlweQHaEK&pid=Api&P=0&h=180");
+    background-size: 100vw 200vh; /* Cover the entire viewport */
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated; /* Maintains pixelated appearance */
+}
+
+
+
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="loginFormContainer">
         <div class="forms">
             <div class="form login">
                 <span class="title">Login</span>
@@ -291,6 +300,15 @@
         });
     }
 
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Your code here
+    document.getElementById('loginFormContainer').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            submitForm();
+        }
+    });
+});
 </script>
 
 

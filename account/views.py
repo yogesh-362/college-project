@@ -24,13 +24,15 @@ import qrcode
 from datetime import datetime, timedelta
 # from datetime import timedelta
 from rest_framework.decorators import api_view, permission_classes
-import re
+
 import inflect
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.db.models import Q
 from django.core.mail import send_mail
 import math
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 
 
@@ -345,7 +347,7 @@ def forgot(request):
 def changepassword(request):
     return render(request, 'account/changepassword.html')
 
-
+@login_required
 def dashboard(request):
     return render(request, 'account/dashboard.html')
 
@@ -390,17 +392,19 @@ def Calendar(request):
 
 
 def all_events(request):
-    all_events = Events.objects.all()
-    out = []
-    for event in all_events:
-        out.append({
-            'title': event.name,
-            'id': event.id,
-            'start': event.start.strftime("%m/%d/%Y, %H:%M:%S"),
-            'end': event.end.strftime("%m/%d/%Y, %H:%M:%S"),
-        })
-
-    return JsonResponse(out, safe=False)
+    try:
+        all_events = Events.objects.all()
+        out = []
+        for event in all_events:
+            out.append({
+                'title': event.name,
+                'id': event.id,
+                'start': timezone.localtime(event.start).isoformat(),  # Convert to local time
+                'end': timezone.localtime(event.end).isoformat(),      # Convert to local time
+            })
+        return JsonResponse(out, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def add_event(request):

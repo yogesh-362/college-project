@@ -193,7 +193,7 @@
                     <div class="form-group">
                         <label for="empRole">Role</label>
                         <select class="form-control" id="empRole" required>
-                            <option value="">Select Role</option>
+                            <option value="" disabled selected>Select Role</option>
                             <option value="Admin">Admin</option>
                             <option value="HR">HR</option>
                             <option value="Employee">Employee</option>
@@ -203,7 +203,7 @@
                     <div class="form-group">
                         <label for="empCompany">Company</label>
                         <select class="form-control" id="empCompany" required>
-                            <option value="">Select Company</option>
+                            <option value="" disabled selected>Select Company</option>
                             <option value="PranshTech Solutions">PranshTech Solutions</option>
                             <option value="Textdrip">Textdrip</option>
                             <!-- Add other options as needed -->
@@ -459,67 +459,67 @@ document.addEventListener('DOMContentLoaded', fetchEmployeeData);
 </script>
 
     <script>
-        function addEmployee() {
-        console.log("addEmployee() called");
-        // Get the values from the input fields
-        const empId = document.getElementById('empId').value;
-        const empName = document.getElementById('empName').value.trim();
-        const empBirthday = document.getElementById('empBirthday').value;
-        const empEmail = document.getElementById('empEmail').value;
-        const empContact = document.getElementById('empContact').value;
-        const empAddress = document.getElementById('empAddress').value;
-        const empProfile = document.getElementById('empProfile') ? document.getElementById('empProfile').files[0] : null;
-        const empPassword = document.getElementById('empPassword').value;
-        console.log("----------------------------------",empProfile);
-        const empDesignation = document.getElementById('empDesignation').value;
-        const empRole = document.getElementById('empRole').value;
-        const empCompany = document.getElementById('empCompany').value;
+function addEmployee() {
+    // Get the values from the input fields
+    const empId = document.getElementById('empId').value;
+    const empName = document.getElementById('empName').value.trim();
+    const empBirthday = document.getElementById('empBirthday').value;
+    const empEmail = document.getElementById('empEmail').value;
+    const empContact = document.getElementById('empContact').value;
+    const empAddress = document.getElementById('empAddress').value;
+    const empProfileInput = document.getElementById('empProfile');
+    const empProfile = empProfileInput && empProfileInput.files.length > 0 ? empProfileInput.files[0] : null; // Get the file
+    const empPassword = document.getElementById('empPassword').value;
+    const empDesignation = document.getElementById('empDesignation').value;
+    const empRole = document.getElementById('empRole').value;
+    const empCompany = document.getElementById('empCompany').value;
 
-        // Perform any validation if needed
-        if (typeof empName !== 'string' || !/^[a-zA-Z\s]+$/.test(empName)) {
-            alert('Employee name must be a valid string containing only letters and spaces.');
-            return; // Exit function early if the employee name is not a valid string
-        }
-
-        // Create a new employee object
-        const newEmployee = {
-            emp_id: empId,
-            emp_name: empName,
-            emp_birthday: empBirthday,
-            emp_email: empEmail,
-            password: empPassword,
-            emp_contact: empContact,
-            emp_address: empAddress,
-            emp_profile: empProfile,
-            emp_designation: empDesignation,
-            emp_role: empRole,
-            emp_company: empCompany
-        };
-
-        // Perform POST request to add employee
-        fetch('http://127.0.0.1:8000/emp-list/', {
-            method: 'POST',
-            body: JSON.stringify(newEmployee),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                // Employee added successfully
-                console.log('Employee added successfully.');
-                // You can perform any additional actions here, like displaying a success message or redirecting the user
-                // For example:
-                // alert('Employee added successfully.');
-                window.location.href = "http://127.0.0.1:8000/emp-list-data/";
-            } else {
-                // Error adding employee
-                console.error('Failed to add employee.');
-                // You can display an error message to the user or handle the situation in any other appropriate way
-            }
-        })
-        .catch(error => console.error('Error adding employee:', error));
+    // Perform any validation if needed
+    if (typeof empName !== 'string' || !/^[a-zA-Z\s]+$/.test(empName)) {
+        alert('Employee name must be a valid string containing only letters and spaces.');
+        return; // Exit function early if the employee name is not a valid string
     }
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append each field to the FormData
+    formData.append('emp_id', empId);
+    formData.append('emp_name', empName);
+    formData.append('emp_birthday', empBirthday);
+    formData.append('emp_email', empEmail);
+    formData.append('emp_contact', empContact);
+    formData.append('emp_address', empAddress);
+    if (empProfile) {
+        formData.append('emp_profile', empProfile); // Append the file if it exists
+    } // Append the file
+    formData.append('password', empPassword);
+    formData.append('emp_designation', empDesignation);
+    formData.append('emp_role', empRole);
+    formData.append('emp_company', empCompany);
+
+    // Perform POST request to add employee
+    fetch('http://127.0.0.1:8000/emp-list/', {
+        method: 'POST',
+        body: formData, // Send the FormData object
+    })
+    .then(response => {
+        if (response.ok) {
+            // Employee added successfully
+            console.log('Employee added successfully.');
+            // You can perform any additional actions here, like displaying a success message or redirecting the user
+            // For example:
+            // alert('Employee added successfully.');
+            window.location.href = "http://127.0.0.1:8000/emp-list-data/";
+        } else {
+            // Error adding employee
+            console.error('Failed to add employee.');
+            // You can display an error message to the user or handle the situation in any other appropriate way
+        }
+    })
+    .catch(error => console.error('Error adding employee:', error));
+}
+
 
 </script>
 

@@ -511,6 +511,8 @@ button:focus {
     }
     .leftsidebar .brand_logo img {
         width: 180px;
+        object-fit:contain;
+        mix-blend-mode:color-burn;
     }
     .card {
         margin: 15px 0;
